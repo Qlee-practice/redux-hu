@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from "react-redux";
+
 class Task extends Component{
   constructor(props) {
     super(props);
@@ -7,21 +8,52 @@ class Task extends Component{
       task: ''
     };
   }
+
+  handleEnterKey = (e) => {
+    e.keyCode === 13 && this.create();
+  };
+
   create = () => {
     this.props.dispatch({ type: 'create', task: this.state.task });
-    console.log(window.store.getState(), 'store')
+    this.setState({task: ''});
   };
+
   handleChange = (e) => {
-    this.setState({task: e.target.value});
+    const inputValue = e.target.value;
+    this.setState({task: inputValue});
   };
+
+  toggleTask = (index) => {
+    this.props.dispatch({type: 'toggle', index});
+  };
+
   render() {
+    console.log(this.props.tasks, 'tasks');
     return(
-      <div>
-        <input type="text" value={this.state.task} onChange={this.handleChange} />
-        <button onClick={this.create}>新建</button>
-      </div>
+      <React.Fragment>
+        <div>
+          <input type="text" value={this.state.task} onChange={this.handleChange} onKeyUp={this.handleEnterKey} />
+          <button onClick={this.create}>新建</button>
+        </div>
+        {
+          this.props.tasks &&
+          <ul style={{padding: 0}}>
+            {
+              this.props.tasks.map((task, index) => (
+                <li key={index} onClick={() => this.toggleTask(index)}>
+                  <input type="checkbox" value={task.text} checked={task.finished}/>
+                  {task.text}
+                </li>
+              ))
+            }
+          </ul>
+        }
+      </React.Fragment>
     )
   }
 }
 
-export default connect()(Task);
+function mapStateToProps(state) {
+  return {tasks: state.tasks}
+};
+export default connect(mapStateToProps)(Task);

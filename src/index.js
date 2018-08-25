@@ -7,13 +7,22 @@ import { Provider } from "react-redux";
 import { createStore } from "redux";
 
 const reducers = (prev, action) => {
-  if (action.type === 'create') {
-    return prev.concat([action.task]);
+  switch (action.type) {
+    case 'create':
+      return {tasks: prev.tasks.concat({text: action.task, finished: false})};
+// TODO:这里有错误！！！
+    case 'toggle':
+      const tasks = prev.tasks;
+      const currentTask = tasks[action.index];
+      currentTask.finished = !currentTask.finished;
+      return {tasks};
+
+    default:
+      return prev;
   }
-  return prev;
 };
 
-const store = createStore(reducers, []);
+const store = createStore(reducers, {tasks: []});
 
 window.store = store;
 ReactDOM.render(
