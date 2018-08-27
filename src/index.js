@@ -9,13 +9,14 @@ import { createStore } from "redux";
 const reducers = (prev, action) => {
   switch (action.type) {
     case 'create':
-      return {tasks: prev.tasks.concat({text: action.task, finished: false})};
-// TODO:这里有错误！！！
+      return {tasks: [{text: action.text, id: action.id, finished: false}, ...prev.tasks]};
+
     case 'toggle':
-      const tasks = prev.tasks;
-      const currentTask = tasks[action.index];
-      currentTask.finished = !currentTask.finished;
-      return {tasks};
+      return {
+        tasks: prev.tasks.map(task => (
+            task.id === action.id ? {...task, finished: !task.finished} : task
+        ))
+      };
 
     default:
       return prev;

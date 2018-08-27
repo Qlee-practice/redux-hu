@@ -5,8 +5,13 @@ class Task extends Component{
   constructor(props) {
     super(props);
     this.state = {
-      task: ''
+      task: '',
+      show: 'all'
     };
+  }
+
+  componentDidMount() {
+    this.id = 0;
   }
 
   handleEnterKey = (e) => {
@@ -14,34 +19,49 @@ class Task extends Component{
   };
 
   create = () => {
-    this.props.dispatch({ type: 'create', task: this.state.task });
+    const {task} = this.state;
+    if(!task) return;
+    this.props.dispatch({ type: 'create', text: this.state.task, id: this.id++ });
     this.setState({task: ''});
   };
 
   handleChange = (e) => {
-    const inputValue = e.target.value;
-    this.setState({task: inputValue});
+    this.setState({task: e.target.value});
   };
 
-  toggleTask = (index) => {
-    this.props.dispatch({type: 'toggle', index});
+  toggleTask = (id) => {
+    this.props.dispatch({type: 'toggle', id});
+  };
+
+  showList = (filter) => {
+    this.setState({show: filter});
   };
 
   render() {
-    console.log(this.props.tasks, 'tasks');
+    const {show} = this.state;
+    let {tasks} = this.props;
+    show === 'finished' ? tasks = tasks.filter(task => task.finished) : '';
+    show === 'unfinished' ? tasks = tasks.filter(task => !task.finished) : '';
     return(
       <React.Fragment>
         <div>
           <input type="text" value={this.state.task} onChange={this.handleChange} onKeyUp={this.handleEnterKey} />
           <button onClick={this.create}>新建</button>
         </div>
+
+        <div>
+          <button disabled={show === 'all'} onClick={() => this.showList('all')}>展示全部</button>
+          <button disabled={show === 'unfinished'} onClick={() => this.showList('unfinished')}>展示待办事项</button>
+          <button disabled={show === 'finished'} onClick={() => this.showList('finished')}>展示已完成</button>
+        </div>
+
         {
-          this.props.tasks &&
+          tasks &&
           <ul style={{padding: 0}}>
             {
-              this.props.tasks.map((task, index) => (
-                <li key={index} onClick={() => this.toggleTask(index)}>
-                  <input type="checkbox" value={task.text} checked={task.finished}/>
+              tasks.map(task => (
+                <li key={task.id} style={{textDecoration: task.finished ? 'line-through' : 'none'}}>
+                  <input type="checkbox" value={task.text} checked={task.finished} onChange={() => this.toggleTask(task.id)}/>
                   {task.text}
                 </li>
               ))
